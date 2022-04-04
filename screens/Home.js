@@ -1,11 +1,13 @@
-import React from "react";
+import React, {useEffect,useState} from "react";
 import styled from "styled-components";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../colors";
+import { useDB } from "../context";
+import { FlatList,LayoutAnimation,TouchableOpacity } from "react-native";
 
 const View = styled.View`
     flex:1;
-    padding: 0px 50px;
+    padding: 0px 30px;
     padding-top: 100px;
     background-color: ${colors.bgColor};
 `;
@@ -14,6 +16,7 @@ const Title = styled.Text`
     color: ${colors.textColor};
     font-size: 38px;
     margin-bottom: 100px;
+    font-weight: 500;
 `;
 
 const Btn = styled.TouchableOpacity`
@@ -27,15 +30,69 @@ const Btn = styled.TouchableOpacity`
     align-items : center;
     background-color : ${colors.btnColor};
     elevation: 5; 
-    box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+    box-shadow: 1px 1px 3px rgba(41,35,95,0.2);
+`;
+const Record = styled.View`
+    background-color: ${colors.cardColor};
+    flex-direction:row;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 1px 1px 3px rgba(41,35,95,0.2);
 `;
 
-const Home = ({navigation: { navigate }}) => (
-    <View>
+const Emotion = styled.Text`
+    font-size: 24px;
+    margin-right: 10px;
+`;
+
+const Message = styled.Text`
+    font-size: 18px;
+`;
+
+const Separator = styled.View`
+    height:10px;
+`
+const Home = ({navigation: { navigate }}) => {
+    const realm = useDB();
+    const [feelings,setFeeligns] = useState([]);
+    useEffect(() => {
+        const feelings = realm.objects("Feeling");
+        feelings.addListener((feelings,changes)=>{
+            LayoutAnimation.spring();
+            setFeeligns(feeligns.sorted("_id",true));
+        });
+        return () => {
+            feelings.removeAllListeners();
+        }
+    },[]);
+    const onPress = (id) => {
+        realm.write(() => {
+            const feeling = realm.objectForPrimaryKey("Feeling",id);
+            realm.delete(feeling);
+        });
+    };
+    return(
+   <View>
         <Title>My Journal</Title>
+        <FlatList 
+            data={feelings}
+            contentContainerStyle={{paddingVertical:10}}
+            ItemSeparatorComponent={Separator}
+            keyExtractor={(feeling)=>feeling._id +""}
+            renderItem= {({item})=>(
+                <TouchableOpacity>
+                <Record>
+                    <Emotion>{item.emotion}</Emotion>
+                    <Message>{item.message}</Message>
+                </Record>
+                </TouchableOpacity>
+            )}
+        />
         <Btn onPress={() => navigate("Write")}>
             <Ionicons name="add" color="white" size={40} />
         </Btn>
     </View>
-);
+    )
+};
 export default Home;
