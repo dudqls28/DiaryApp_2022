@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "DiaryApp_2022",
+    "slug": "DiaryApp_2022",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "DiaryApp_2022"
+}
